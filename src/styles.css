@@ -142,3 +142,27 @@
     color: var(--color-foreground);
   }
 }
+
+/* Mental Imagery Therapy custom styles */
+:focus-visible {
+  outline: 2px solid #0f4c3a;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+input[type='range'] { accent-color: #0f4c3a; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #f8f7f4; }
+::-webkit-scrollbar-thumb { background: #d4d0c4; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #5c6b5c; }
+
+@keyframes bodyBreathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.65; }
+}
+.svg-breathe { animation: bodyBreathe 4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-orb-pulse, .animate-breathe, .animate-fade-slide, .animate-spin-slow, .svg-breathe {
+    animation: none !important;
+  }
+}
