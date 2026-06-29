@@ -1,6 +1,7 @@
 import type { UserProfile, SessionJSON, TherapyPlan } from '@/types/session';
 import { validateAndRepairSession } from './session-validator';
 import type { ConditionKnowledge } from './knowledge-graph';
+import { callGroqProxy } from './groq.functions';
 
 const GROQ_MODEL_SESSION = 'llama-3.3-70b-versatile';
 const GROQ_MODEL_CHAT = 'llama-3.1-8b-instant';
@@ -23,65 +24,17 @@ function sanitizeInput(text: string): string {
     .slice(0, 500); // hard length cap
 }
 
-// ─── FETCH WITH TIMEOUT ─────────────────────────────────────────
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit,
-  timeoutMs: number
-): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
-    clearTimeout(id);
-  }
-}
-
-// ─── GROQ API CALL ──────────────────────────────────────────────
+// ─── GROQ CALL (via server proxy) ───────────────────────────────
 async function callGroq(
   messages: GroqMessage[],
   model: string,
   maxTokens: number,
   jsonMode = false
 ): Promise<string> {
-  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error(
-      'VITE_GROQ_API_KEY is not set. Add it to your .env file and redeploy.'
-    );
-  }
-
-  const body: Record<string, unknown> = {
-    model,
-    messages,
-    temperature: 0.72,
-    max_tokens: maxTokens,
-  };
-  if (jsonMode) body.response_format = { type: 'json_object' };
-
-  const response = await fetchWithTimeout(
-    'https://api.groq.com/openai/v1/chat/completions',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    },
-    REQUEST_TIMEOUT_MS
-  );
-
-  if (!response.ok) {
-    const errText = await response.text().catch(() => 'unknown error');
-    throw new Error(`Groq API error ${response.status}: ${errText.slice(0, 200)}`);
-  }
-
-  const data = await response.json();
-  const content = data?.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Groq returned empty content');
-  return content as string;
+  const { content } = await callGroqProxy({
+    data: { messages, model, maxTokens, jsonMode },
+  });
+  return content;
 }
 
 // ─── SESSION SYSTEM PROMPT ──────────────────────────────────────
