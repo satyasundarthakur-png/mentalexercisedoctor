@@ -35,7 +35,7 @@ export default function ConversationInterface({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -86,8 +86,7 @@ export default function ConversationInterface({
     setVoiceError('');
 
     const SpeechRecognitionAPI =
-      (window as Window & { SpeechRecognition?: typeof SpeechRecognition; webkitSpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-      (window as Window & { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognitionAPI) {
       setVoiceError('Voice input requires Chrome or Safari.');
