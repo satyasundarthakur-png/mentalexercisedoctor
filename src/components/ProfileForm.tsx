@@ -98,9 +98,14 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
     (c) => c !== profile.primaryCondition
   );
 
+  const inputCls =
+    "w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-[#0f2a23] focus:outline-none focus:border-[#0f4c3a] focus:ring-2 focus:ring-[#0f4c3a]/15 bg-white/90 backdrop-blur-sm transition-all shadow-[0_1px_2px_rgba(15,42,35,0.04)]";
+  const labelCls = "text-[10px] font-semibold tracking-[0.14em] uppercase text-[#5c6b5c] block mb-2";
+
   return (
-    <div className="bg-white rounded-4xl border border-[#e6e3d9] p-8 md:p-10 shadow-xl">
-      <h3 className="text-xl font-light text-[#2c3e2d] mb-7">Tell us about you</h3>
+    <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-100 p-8 md:p-12 shadow-[0_20px_60px_-20px_rgba(15,42,35,0.18),0_4px_12px_-4px_rgba(15,42,35,0.06)]">
+      <h3 className="text-2xl font-semibold tracking-tight text-[#0f2a23] mb-1">Tell us about you</h3>
+      <p className="text-sm text-[#5c6b5c] mb-8">A few details to tailor your session.</p>
 
       {/* ── SAFETY WARNING ────────────────────────────────────────── */}
       {safetyWarning && (
