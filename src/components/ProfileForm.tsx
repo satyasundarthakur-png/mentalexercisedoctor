@@ -301,7 +301,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
         type="button"
         onClick={handleGenerate}
         disabled={isGenerating || safetyWarning?.riskLevel === 'critical'}
-        className="w-full py-4 bg-[#0f4c3a] hover:bg-[#0a3a2b] text-white rounded-2xl text-base font-medium tracking-wide transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        className="w-full py-4 bg-gradient-to-br from-[#0f4c3a] via-[#136147] to-[#1a7a5a] hover:from-[#0a3a2b] hover:to-[#0f4c3a] text-white rounded-2xl text-base font-semibold tracking-wide transition-all shadow-[0_10px_30px_-8px_rgba(15,76,58,0.55)] hover:shadow-[0_14px_36px_-8px_rgba(15,76,58,0.65)] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-3"
       >
         {isGenerating ? (
           <>
