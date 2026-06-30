@@ -181,22 +181,25 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── SECONDARY CONDITIONS ──────────────────────────────────── */}
       <div className="mb-5">
-        <p className="text-xs text-[#5c6b5c] mb-2.5">Secondary concerns (optional)</p>
+        <p className={labelCls}>Secondary concerns (optional)</p>
         <div className="flex flex-wrap gap-2">
-          {secondaryOptions.map((cond) => (
-            <button
-              key={cond}
-              type="button"
-              onClick={() => toggleSecondary(cond)}
-              className={`px-3.5 py-1.5 text-xs rounded-full border transition-all ${
-                profile.secondaryConditions.includes(cond)
-                  ? 'bg-[#0f4c3a] text-white border-[#0f4c3a]'
-                  : 'border-[#c8c3b8] text-[#2c3e2d] hover:bg-[#f1ede3] hover:border-[#a8a39a]'
-              }`}
-            >
-              {cond}
-            </button>
-          ))}
+          {secondaryOptions.map((cond) => {
+            const active = profile.secondaryConditions.includes(cond);
+            return (
+              <button
+                key={cond}
+                type="button"
+                onClick={() => toggleSecondary(cond)}
+                className={`px-3.5 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 ${
+                  active
+                    ? 'bg-gradient-to-br from-[#0f4c3a] to-[#1a7a5a] text-white border-[#0f4c3a] shadow-[0_4px_12px_-2px_rgba(15,76,58,0.45)] scale-[1.02]'
+                    : 'bg-white/70 border-slate-200 text-[#2c3e2d] hover:bg-[#eef5f1] hover:border-[#0f4c3a]/40 hover:-translate-y-px shadow-[0_1px_2px_rgba(15,42,35,0.04)]'
+                }`}
+              >
+                {cond}
+              </button>
+            );
+          })}
         </div>
       </div>
 
