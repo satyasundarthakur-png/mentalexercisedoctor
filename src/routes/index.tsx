@@ -57,18 +57,20 @@ function Index() {
               transition={{ duration: 0.4 }}
               className="text-center mb-12"
             >
-              <p className="text-[10px] tracking-[4px] text-[#5c6b5c] uppercase">
+              <p className="text-[10px] tracking-[0.32em] font-medium text-[#0f4c3a]/70 uppercase">
                 Mental Motor Imagery Therapy Engine
               </p>
-              <h1 className="text-4xl sm:text-5xl font-light tracking-tight mt-3 text-[#2c3e2d] leading-tight">
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mt-4 text-[#0f2a23] leading-[1.05]">
                 Create your personalized<br />
-                <span className="text-[#0f4c3a]">5-minute session</span>
+                <span className="bg-gradient-to-r from-[#0f4c3a] via-[#1a7a5a] to-[#3b82c4] bg-clip-text text-transparent">
+                  5-minute session
+                </span>
               </h1>
-              <p className="text-[#5c6b5c] max-w-md mx-auto mt-4 leading-relaxed text-sm">
+              <p className="text-[#4a5b56] max-w-md mx-auto mt-5 leading-relaxed text-sm">
                 Evidence-informed guided imagery, clinically reasoned by AI, designed to
                 complement your rehabilitation and wellbeing journey.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 mt-6">
+              <div className="flex flex-wrap justify-center gap-2 mt-7">
                 {[
                   "🧠 AI-personalised",
                   "🔊 Voice narration",
@@ -78,7 +80,7 @@ function Index() {
                 ].map((chip) => (
                   <span
                     key={chip}
-                    className="px-3 py-1 rounded-full bg-white border border-[#e6e3d9] text-xs text-[#5c6b5c]"
+                    className="px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/80 text-xs text-[#4a5b56] shadow-[0_1px_2px_rgba(15,42,35,0.04)]"
                   >
                     {chip}
                   </span>
