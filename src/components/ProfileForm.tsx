@@ -132,7 +132,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
       {/* ── AGE + GENDER ──────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="age">Age</label>
+          <label className={labelCls} htmlFor="age">Age</label>
           <input
             id="age"
             type="number"
@@ -140,16 +140,16 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
             onChange={(e) => updateField('age', parseInt(e.target.value) || 18)}
             min={16}
             max={100}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           />
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="gender">Gender</label>
+          <label className={labelCls} htmlFor="gender">Gender</label>
           <select
             id="gender"
             value={profile.gender}
             onChange={(e) => updateField('gender', e.target.value)}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {GENDER_OPTIONS.map((g) => <option key={g}>{g}</option>)}
           </select>
@@ -158,7 +158,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── PRIMARY CONDITION ─────────────────────────────────────── */}
       <div className="mb-5">
-        <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="primary">
+        <label className={labelCls} htmlFor="primary">
           Primary condition
         </label>
         <select
@@ -173,7 +173,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
               secondaryConditions: prev.secondaryConditions.filter((c) => c !== e.target.value),
             }));
           }}
-          className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+          className={inputCls}
         >
           {(CONDITIONS as readonly string[]).map((c) => <option key={c}>{c}</option>)}
         </select>
@@ -203,7 +203,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
       {/* ── PAIN + MOBILITY ───────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="pain">
+          <label className={labelCls} htmlFor="pain">
             Pain level: {profile.painLevel}/10
           </label>
           <input
@@ -222,45 +222,45 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
           </div>
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="mobility">Mobility level</label>
+          <label className={labelCls} htmlFor="mobility">Mobility level</label>
           <select
             id="mobility"
             value={profile.mobilityLevel}
             onChange={(e) => updateField('mobilityLevel', e.target.value as UserProfile['mobilityLevel'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {MOBILITY_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="energy">Energy level</label>
+          <label className={labelCls} htmlFor="energy">Energy level</label>
           <select
             id="energy"
             value={profile.energyLevel}
             onChange={(e) => updateField('energyLevel', e.target.value as UserProfile['energyLevel'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {ENERGY_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="stress">Stress level</label>
+          <label className={labelCls} htmlFor="stress">Stress level</label>
           <select
             id="stress"
             value={profile.stressLevel}
             onChange={(e) => updateField('stressLevel', e.target.value as UserProfile['stressLevel'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {STRESS_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="sleep">Sleep quality</label>
+          <label className={labelCls} htmlFor="sleep">Sleep quality</label>
           <select
             id="sleep"
             value={profile.sleepQuality}
             onChange={(e) => updateField('sleepQuality', e.target.value as UserProfile['sleepQuality'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {SLEEP_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
@@ -269,7 +269,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── GOAL ─────────────────────────────────────────────────── */}
       <div className="mb-6">
-        <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="goal">
+        <label className={labelCls} htmlFor="goal">
           Recovery / fitness goal
         </label>
         <textarea
@@ -279,7 +279,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
           rows={3}
           maxLength={400}
           placeholder="What would you like to achieve or improve?"
-          className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] resize-none bg-white placeholder-[#b8b3a8]"
+          className={`${inputCls} resize-none placeholder-[#b8b3a8]`}
         />
         <p className="text-[10px] text-[#8a9a8a] text-right mt-1">
           {profile.fitnessGoal.length}/400
