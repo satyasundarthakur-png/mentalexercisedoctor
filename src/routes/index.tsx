@@ -31,7 +31,21 @@ function Index() {
   const handleReset = () => setSession(null);
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] py-10 px-4">
+    <div className="relative min-h-screen py-12 px-4 overflow-hidden bg-[#f6f8f7]">
+      {/* Premium mesh gradient backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage: [
+            'radial-gradient(60rem 40rem at 8% -10%, rgba(167,212,200,0.45), transparent 60%)',
+            'radial-gradient(50rem 36rem at 100% 10%, rgba(199,210,254,0.45), transparent 60%)',
+            'radial-gradient(55rem 38rem at 50% 110%, rgba(221,214,254,0.40), transparent 60%)',
+            'radial-gradient(40rem 30rem at 80% 80%, rgba(186,230,253,0.35), transparent 65%)',
+            'linear-gradient(180deg, #f7faf9 0%, #f3f6fb 100%)',
+          ].join(','),
+        }}
+      />
       <div className="max-w-3xl mx-auto">
         <AnimatePresence>
           {!session && (
@@ -43,18 +57,20 @@ function Index() {
               transition={{ duration: 0.4 }}
               className="text-center mb-12"
             >
-              <p className="text-[10px] tracking-[4px] text-[#5c6b5c] uppercase">
+              <p className="text-[10px] tracking-[0.32em] font-medium text-[#0f4c3a]/70 uppercase">
                 Mental Motor Imagery Therapy Engine
               </p>
-              <h1 className="text-4xl sm:text-5xl font-light tracking-tight mt-3 text-[#2c3e2d] leading-tight">
+              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight mt-4 text-[#0f2a23] leading-[1.05]">
                 Create your personalized<br />
-                <span className="text-[#0f4c3a]">5-minute session</span>
+                <span className="bg-gradient-to-r from-[#0f4c3a] via-[#1a7a5a] to-[#3b82c4] bg-clip-text text-transparent">
+                  5-minute session
+                </span>
               </h1>
-              <p className="text-[#5c6b5c] max-w-md mx-auto mt-4 leading-relaxed text-sm">
+              <p className="text-[#4a5b56] max-w-md mx-auto mt-5 leading-relaxed text-sm">
                 Evidence-informed guided imagery, clinically reasoned by AI, designed to
                 complement your rehabilitation and wellbeing journey.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 mt-6">
+              <div className="flex flex-wrap justify-center gap-2 mt-7">
                 {[
                   "🧠 AI-personalised",
                   "🔊 Voice narration",
@@ -64,7 +80,7 @@ function Index() {
                 ].map((chip) => (
                   <span
                     key={chip}
-                    className="px-3 py-1 rounded-full bg-white border border-[#e6e3d9] text-xs text-[#5c6b5c]"
+                    className="px-3.5 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/80 text-xs text-[#4a5b56] shadow-[0_1px_2px_rgba(15,42,35,0.04)]"
                   >
                     {chip}
                   </span>

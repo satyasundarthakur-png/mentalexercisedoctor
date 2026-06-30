@@ -98,9 +98,14 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
     (c) => c !== profile.primaryCondition
   );
 
+  const inputCls =
+    "w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-[#0f2a23] focus:outline-none focus:border-[#0f4c3a] focus:ring-2 focus:ring-[#0f4c3a]/15 bg-white/90 backdrop-blur-sm transition-all shadow-[0_1px_2px_rgba(15,42,35,0.04)]";
+  const labelCls = "text-[10px] font-semibold tracking-[0.14em] uppercase text-[#5c6b5c] block mb-2";
+
   return (
-    <div className="bg-white rounded-4xl border border-[#e6e3d9] p-8 md:p-10 shadow-xl">
-      <h3 className="text-xl font-light text-[#2c3e2d] mb-7">Tell us about you</h3>
+    <div className="relative bg-white/80 backdrop-blur-xl rounded-3xl border border-slate-100 p-8 md:p-12 shadow-[0_20px_60px_-20px_rgba(15,42,35,0.18),0_4px_12px_-4px_rgba(15,42,35,0.06)]">
+      <h3 className="text-2xl font-semibold tracking-tight text-[#0f2a23] mb-1">Tell us about you</h3>
+      <p className="text-sm text-[#5c6b5c] mb-8">A few details to tailor your session.</p>
 
       {/* ── SAFETY WARNING ────────────────────────────────────────── */}
       {safetyWarning && (
@@ -127,7 +132,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
       {/* ── AGE + GENDER ──────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="age">Age</label>
+          <label className={labelCls} htmlFor="age">Age</label>
           <input
             id="age"
             type="number"
@@ -135,16 +140,16 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
             onChange={(e) => updateField('age', parseInt(e.target.value) || 18)}
             min={16}
             max={100}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           />
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="gender">Gender</label>
+          <label className={labelCls} htmlFor="gender">Gender</label>
           <select
             id="gender"
             value={profile.gender}
             onChange={(e) => updateField('gender', e.target.value)}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {GENDER_OPTIONS.map((g) => <option key={g}>{g}</option>)}
           </select>
@@ -153,7 +158,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── PRIMARY CONDITION ─────────────────────────────────────── */}
       <div className="mb-5">
-        <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="primary">
+        <label className={labelCls} htmlFor="primary">
           Primary condition
         </label>
         <select
@@ -168,7 +173,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
               secondaryConditions: prev.secondaryConditions.filter((c) => c !== e.target.value),
             }));
           }}
-          className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+          className={inputCls}
         >
           {(CONDITIONS as readonly string[]).map((c) => <option key={c}>{c}</option>)}
         </select>
@@ -176,29 +181,32 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── SECONDARY CONDITIONS ──────────────────────────────────── */}
       <div className="mb-5">
-        <p className="text-xs text-[#5c6b5c] mb-2.5">Secondary concerns (optional)</p>
+        <p className={labelCls}>Secondary concerns (optional)</p>
         <div className="flex flex-wrap gap-2">
-          {secondaryOptions.map((cond) => (
-            <button
-              key={cond}
-              type="button"
-              onClick={() => toggleSecondary(cond)}
-              className={`px-3.5 py-1.5 text-xs rounded-full border transition-all ${
-                profile.secondaryConditions.includes(cond)
-                  ? 'bg-[#0f4c3a] text-white border-[#0f4c3a]'
-                  : 'border-[#c8c3b8] text-[#2c3e2d] hover:bg-[#f1ede3] hover:border-[#a8a39a]'
-              }`}
-            >
-              {cond}
-            </button>
-          ))}
+          {secondaryOptions.map((cond) => {
+            const active = profile.secondaryConditions.includes(cond);
+            return (
+              <button
+                key={cond}
+                type="button"
+                onClick={() => toggleSecondary(cond)}
+                className={`px-3.5 py-1.5 text-xs font-medium rounded-full border transition-all duration-200 ${
+                  active
+                    ? 'bg-gradient-to-br from-[#0f4c3a] to-[#1a7a5a] text-white border-[#0f4c3a] shadow-[0_4px_12px_-2px_rgba(15,76,58,0.45)] scale-[1.02]'
+                    : 'bg-white/70 border-slate-200 text-[#2c3e2d] hover:bg-[#eef5f1] hover:border-[#0f4c3a]/40 hover:-translate-y-px shadow-[0_1px_2px_rgba(15,42,35,0.04)]'
+                }`}
+              >
+                {cond}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* ── PAIN + MOBILITY ───────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="pain">
+          <label className={labelCls} htmlFor="pain">
             Pain level: {profile.painLevel}/10
           </label>
           <input
@@ -217,45 +225,45 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
           </div>
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="mobility">Mobility level</label>
+          <label className={labelCls} htmlFor="mobility">Mobility level</label>
           <select
             id="mobility"
             value={profile.mobilityLevel}
             onChange={(e) => updateField('mobilityLevel', e.target.value as UserProfile['mobilityLevel'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {MOBILITY_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="energy">Energy level</label>
+          <label className={labelCls} htmlFor="energy">Energy level</label>
           <select
             id="energy"
             value={profile.energyLevel}
             onChange={(e) => updateField('energyLevel', e.target.value as UserProfile['energyLevel'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {ENERGY_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
         </div>
         <div>
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="stress">Stress level</label>
+          <label className={labelCls} htmlFor="stress">Stress level</label>
           <select
             id="stress"
             value={profile.stressLevel}
             onChange={(e) => updateField('stressLevel', e.target.value as UserProfile['stressLevel'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {STRESS_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
         </div>
         <div className="sm:col-span-2">
-          <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="sleep">Sleep quality</label>
+          <label className={labelCls} htmlFor="sleep">Sleep quality</label>
           <select
             id="sleep"
             value={profile.sleepQuality}
             onChange={(e) => updateField('sleepQuality', e.target.value as UserProfile['sleepQuality'])}
-            className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] bg-white"
+            className={inputCls}
           >
             {SLEEP_OPTIONS.map((v) => <option key={v}>{v}</option>)}
           </select>
@@ -264,7 +272,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── GOAL ─────────────────────────────────────────────────── */}
       <div className="mb-6">
-        <label className="text-xs text-[#5c6b5c] block mb-1.5" htmlFor="goal">
+        <label className={labelCls} htmlFor="goal">
           Recovery / fitness goal
         </label>
         <textarea
@@ -274,7 +282,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
           rows={3}
           maxLength={400}
           placeholder="What would you like to achieve or improve?"
-          className="w-full border border-[#d4d0c4] rounded-2xl px-4 py-3 text-sm text-[#2c3e2d] focus:outline-none focus:border-[#0f4c3a] resize-none bg-white placeholder-[#b8b3a8]"
+          className={`${inputCls} resize-none placeholder-[#b8b3a8]`}
         />
         <p className="text-[10px] text-[#8a9a8a] text-right mt-1">
           {profile.fitnessGoal.length}/400
@@ -293,7 +301,7 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
         type="button"
         onClick={handleGenerate}
         disabled={isGenerating || safetyWarning?.riskLevel === 'critical'}
-        className="w-full py-4 bg-[#0f4c3a] hover:bg-[#0a3a2b] text-white rounded-2xl text-base font-medium tracking-wide transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        className="w-full py-4 bg-gradient-to-br from-[#0f4c3a] via-[#136147] to-[#1a7a5a] hover:from-[#0a3a2b] hover:to-[#0f4c3a] text-white rounded-2xl text-base font-semibold tracking-wide transition-all shadow-[0_10px_30px_-8px_rgba(15,76,58,0.55)] hover:shadow-[0_14px_36px_-8px_rgba(15,76,58,0.65)] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 flex items-center justify-center gap-3"
       >
         {isGenerating ? (
           <>
