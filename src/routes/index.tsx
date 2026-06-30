@@ -31,7 +31,21 @@ function Index() {
   const handleReset = () => setSession(null);
 
   return (
-    <div className="min-h-screen bg-[#f8f7f4] py-10 px-4">
+    <div className="relative min-h-screen py-12 px-4 overflow-hidden bg-[#f6f8f7]">
+      {/* Premium mesh gradient backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          backgroundImage: [
+            'radial-gradient(60rem 40rem at 8% -10%, rgba(167,212,200,0.45), transparent 60%)',
+            'radial-gradient(50rem 36rem at 100% 10%, rgba(199,210,254,0.45), transparent 60%)',
+            'radial-gradient(55rem 38rem at 50% 110%, rgba(221,214,254,0.40), transparent 60%)',
+            'radial-gradient(40rem 30rem at 80% 80%, rgba(186,230,253,0.35), transparent 65%)',
+            'linear-gradient(180deg, #f7faf9 0%, #f3f6fb 100%)',
+          ].join(','),
+        }}
+      />
       <div className="max-w-3xl mx-auto">
         <AnimatePresence>
           {!session && (
