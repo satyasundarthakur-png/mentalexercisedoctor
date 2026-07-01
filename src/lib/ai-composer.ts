@@ -3,8 +3,8 @@ import { validateAndRepairSession } from './session-validator';
 import type { ConditionKnowledge } from './knowledge-graph';
 import { callGroqProxy } from './groq.functions';
 
-const GROQ_MODEL_SESSION = 'llama-3.3-70b-versatile';
-const GROQ_MODEL_CHAT = 'llama-3.1-8b-instant';
+const GROQ_MODEL_SESSION = 'openai/gpt-oss-120b'; // Updated Jul 2026: llama-3.3-70b-versatile deprecated
+const GROQ_MODEL_CHAT = 'openai/gpt-oss-20b'; // Updated Jul 2026: llama-3.1-8b-instant deprecated
 const MAX_SESSION_TOKENS = 4500;
 const MAX_CHAT_TOKENS = 300;
 const REQUEST_TIMEOUT_MS = 30_000;
