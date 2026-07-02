@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import type { UserProfile, SafetyCheckResult, LanguageOption, VoiceGender } from '@/types/session';
-import { CONDITIONS, LANGUAGES } from '@/types/session';
+import type { UserProfile, SafetyCheckResult, LanguageOption, VoiceGender, BaseLanguage } from '@/types/session';
+import { CONDITIONS, INDIAN_LANGUAGES, composeLanguage, parseLanguage } from '@/types/session';
 import { performSafetyCheck } from '@/lib/safety-layer';
 import { createTherapyPlan } from '@/lib/therapy-planner';
 import { lookupConditionKnowledge } from '@/lib/knowledge-graph';
@@ -197,18 +197,22 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
 
       {/* ── LANGUAGE + VOICE GENDER ───────────────────────────────── */}
       <p className="flex items-center text-sm font-semibold text-[#2c3e2d] mb-3">{sectionIcon('🗣️', 1)}Language & voice</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-3">
         <div>
           <label className={labelCls} htmlFor="language">
             Session language
           </label>
           <select
             id="language"
-            value={profile.language}
-            onChange={(e) => updateField('language', e.target.value as LanguageOption)}
+            value={parseLanguage(profile.language).base}
+            onChange={(e) => {
+              const base = e.target.value as BaseLanguage;
+              const { bilingual } = parseLanguage(profile.language);
+              updateField('language', composeLanguage(base, base === 'English' ? false : bilingual));
+            }}
             className={inputCls}
           >
-            {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+            {INDIAN_LANGUAGES.map((l) => <option key={l}>{l}</option>)}
           </select>
         </div>
         <div>
@@ -225,9 +229,27 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
             <option value="Male">Male — deep & meditative</option>
           </select>
         </div>
-        <p className="text-[10px] text-[#8a9a8a] sm:col-span-2 -mt-3">
-          Choose Hindi or Bilingual to have narration and on-screen text in Hindi alongside English.
-          We'll match the nearest available male/female voice on your device for a meditative tone.
+      </div>
+
+      {parseLanguage(profile.language).base !== 'English' && (
+        <label className="flex items-center gap-2 text-xs text-[#2c3e2d] mb-3 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={parseLanguage(profile.language).bilingual}
+            onChange={(e) => {
+              const { base } = parseLanguage(profile.language);
+              updateField('language', composeLanguage(base, e.target.checked));
+            }}
+            className="w-4 h-4 rounded accent-[#0f4c3a]"
+          />
+          Also include English alongside {parseLanguage(profile.language).base} (bilingual)
+        </label>
+      )}
+
+      <div className="mb-5">
+        <p className="text-[10px] text-[#8a9a8a]">
+          Narration and on-screen text will be generated in your chosen language{parseLanguage(profile.language).bilingual ? ', paired with an English translation' : ''}.
+          We'll match the nearest available male/female voice on your device for a meditative tone — availability depends on the voices installed on your phone or browser.
         </p>
       </div>
 

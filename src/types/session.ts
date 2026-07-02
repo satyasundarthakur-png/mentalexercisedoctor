@@ -35,7 +35,48 @@ export interface SessionJSON {
   safety_notes: string;
 }
 
-export type LanguageOption = 'English' | 'Hindi' | 'Bilingual (Hindi + English)';
+// Base spoken languages supported. "Bilingual" sessions are composed as
+// `Bilingual (<Language> + English)` at runtime rather than being separate
+// union members, so adding a language only requires one line here.
+export const INDIAN_LANGUAGES = [
+  'English',
+  'Hindi',
+  'Telugu',
+  'Tamil',
+  'Kannada',
+  'Malayalam',
+  'Bengali',
+  'Marathi',
+  'Gujarati',
+  'Punjabi',
+  'Odia',
+  'Urdu',
+  'Assamese',
+] as const;
+export type BaseLanguage = typeof INDIAN_LANGUAGES[number];
+
+// Free-form so `Bilingual (Telugu + English)` etc. are valid without an
+// unwieldy union of every combination.
+export type LanguageOption = string;
+
+// BCP-47 speech codes used for both AI prompt language selection and
+// browser TTS voice matching.
+export const LANGUAGE_SPEECH_CODES: Record<BaseLanguage, string> = {
+  English: 'en-IN',
+  Hindi: 'hi-IN',
+  Telugu: 'te-IN',
+  Tamil: 'ta-IN',
+  Kannada: 'kn-IN',
+  Malayalam: 'ml-IN',
+  Bengali: 'bn-IN',
+  Marathi: 'mr-IN',
+  Gujarati: 'gu-IN',
+  Punjabi: 'pa-IN',
+  Odia: 'or-IN',
+  Urdu: 'ur-IN',
+  Assamese: 'as-IN',
+};
+
 export type VoiceGender = 'Female' | 'Male';
 
 export interface UserProfile {
@@ -115,4 +156,19 @@ export const CONDITIONS = [
   'Other (type your own / search with AI)',
 ] as const;
 
-export const LANGUAGES: LanguageOption[] = ['English', 'Hindi', 'Bilingual (Hindi + English)'];
+export function composeLanguage(base: BaseLanguage, bilingual: boolean): LanguageOption {
+  return base !== 'English' && bilingual ? `Bilingual (${base} + English)` : base;
+}
+
+export function parseLanguage(language: LanguageOption): { base: BaseLanguage; bilingual: boolean } {
+  const match = /^Bilingual \((.+) \+ English\)$/.exec(language);
+  if (match && INDIAN_LANGUAGES.includes(match[1] as BaseLanguage)) {
+    return { base: match[1] as BaseLanguage, bilingual: true };
+  }
+  return { base: (INDIAN_LANGUAGES.includes(language as BaseLanguage) ? language : 'English') as BaseLanguage, bilingual: false };
+}
+
+export function languageSpeechCode(language: LanguageOption): string {
+  const { base } = parseLanguage(language);
+  return LANGUAGE_SPEECH_CODES[base];
+}

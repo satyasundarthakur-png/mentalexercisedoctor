@@ -6,17 +6,25 @@ import type { VoiceOptions, VoiceGender } from '@/types/session';
  * Instantiated lazily on first use, avoiding SSR / server-side crashes.
  * Supports rate, pitch, volume, language, and gender-aware voice selection,
  * with a "meditative" pitch/rate profile and diagnostics for troubleshooting
- * missing platform voices (most common cause of "no Hindi audio" reports).
+ * missing platform voices (most common cause of "no audio in this language" reports).
  */
 
-// Known Hindi voice names across platforms (Windows/Edge, macOS/Safari, Android/Chrome)
-const HINDI_VOICE_NAME_HINTS = [
-  'hindi', 'हिन्दी', 'हिंदी',
-  'lekha',              // macOS/iOS (female)
-  'kalpana', 'hemant',  // Windows legacy (female / male)
-  'swara', 'madhur',    // Windows/Edge neural (female / male)
-  'rishi',
-];
+// Known regional-language voice names across platforms (Windows/Edge, macOS/Safari,
+// Android/Chrome) that don't always carry the right BCP-47 lang tag.
+const LANG_VOICE_NAME_HINTS: Record<string, string[]> = {
+  hi: ['hindi', 'हिन्दी', 'हिंदी', 'lekha', 'kalpana', 'hemant', 'swara', 'madhur', 'rishi'],
+  te: ['telugu', 'తెలుగు', 'shruti'],
+  ta: ['tamil', 'தமிழ்', 'valluvar'],
+  kn: ['kannada', 'ಕನ್ನಡ'],
+  ml: ['malayalam', 'മലയാളം'],
+  bn: ['bengali', 'bangla', 'বাংলা', 'bashkar'],
+  mr: ['marathi', 'मराठी', 'manohar'],
+  gu: ['gujarati', 'ગુજરાતી', 'dhwani'],
+  pa: ['punjabi', 'ਪੰਜਾਬੀ', 'gurmukhi'],
+  or: ['odia', 'oriya', 'ଓଡ଼ିଆ'],
+  ur: ['urdu', 'اردو', 'gul'],
+  as: ['assamese', 'অসমীয়া'],
+};
 
 // Best-effort gender hints — the Web Speech API has no standard gender field,
 // so we infer from well-known voice names across platforms.
@@ -24,12 +32,12 @@ const FEMALE_NAME_HINTS = [
   'female', 'woman',
   'samantha', 'karen', 'moira', 'zira', 'victoria', 'susan', 'fiona', 'tessa',
   'ava', 'allison', 'salli', 'joanna', 'kendra', 'kimberly',
-  'swara', 'kalpana', 'lekha', // Hindi female voices
+  'swara', 'kalpana', 'lekha', 'shruti', 'dhwani', // regional female voices
 ];
 const MALE_NAME_HINTS = [
   'male', 'man',
   'daniel', 'alex', 'fred', 'david', 'mark', 'george', 'james', 'justin', 'matthew', 'thomas',
-  'madhur', 'hemant', 'rishi', // Hindi male voices
+  'madhur', 'hemant', 'rishi', 'valluvar', 'manohar', 'bashkar', // regional male voices
 ];
 
 function guessGender(voiceName: string): VoiceGender | null {
@@ -108,12 +116,12 @@ class BrowserVoiceEngine {
   private candidatesForLang(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice[] {
     const langLower = lang.toLowerCase();
     const langPrefix = langLower.split('-')[0]; // e.g. "hi" from "hi-IN"
-    const isHindi = langPrefix === 'hi';
+    const nameHints = LANG_VOICE_NAME_HINTS[langPrefix] || [];
 
     const exact = voices.filter((v) => v.lang?.toLowerCase() === langLower);
     const prefixMatch = voices.filter((v) => v.lang?.toLowerCase().startsWith(langPrefix));
-    const nameMatch = isHindi
-      ? voices.filter((v) => HINDI_VOICE_NAME_HINTS.some((hint) => v.name.toLowerCase().includes(hint)))
+    const nameMatch = nameHints.length
+      ? voices.filter((v) => nameHints.some((hint) => v.name.toLowerCase().includes(hint)))
       : [];
 
     // Merge, de-duplicated, preserving priority order: exact lang > prefix lang > name hint
@@ -197,17 +205,17 @@ class BrowserVoiceEngine {
           const fallback = this.pickVoice(voices, options.voiceGender);
           if (fallback) {
             utterance.voice = fallback;
-            this._lastPickedVoiceLabel = `${fallback.name} (${fallback.lang}) — fallback, not Hindi`;
+            this._lastPickedVoiceLabel = `${fallback.name} (${fallback.lang}) — fallback, not ${options.lang}`;
             applyMeditativeShape(options.voiceGender, false);
           }
           this._lastNoVoiceWarning =
-            `No installed Hindi voice found for "${options.lang}" on this device/browser. ` +
-            `Speaking with an available voice instead. To hear true Hindi narration, install a ` +
-            `Hindi text-to-speech voice: Android → Settings → System → Languages → Text-to-speech ` +
-            `→ install "Hindi (India)"; Windows → Settings → Time & Language → Speech → Add a voice → Hindi; ` +
-            `macOS/iOS → Settings → Accessibility → Spoken Content → Voices → add Hindi.`;
+            `No installed voice found for "${options.lang}" on this device/browser. ` +
+            `Speaking with an available voice instead. To hear narration in this language, install ` +
+            `a matching text-to-speech voice: Android → Settings → System → Languages → Text-to-speech ` +
+            `→ add the language; Windows → Settings → Time & Language → Speech → Add a voice; ` +
+            `macOS/iOS → Settings → Accessibility → Spoken Content → Voices → add the language.`;
           console.warn(
-            '[voice-engine] No Hindi voice found. Detected voices:',
+            `[voice-engine] No voice found for ${options.lang}. Detected voices:`,
             voices.map((v) => `${v.name} (${v.lang})`)
           );
         }

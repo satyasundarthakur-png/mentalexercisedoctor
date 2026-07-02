@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { SessionJSON } from '@/types/session';
+import { languageSpeechCode, parseLanguage } from '@/types/session';
 import BodyVisualizer from './BodyVisualizer';
 import ConversationInterface from './ConversationInterface';
 import { getVoiceEngine } from '@/lib/voice-engine';
@@ -139,10 +140,9 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
     ve.setRate(voiceRate);
     setIsSpeaking(true);
     setVoiceWarning('');
-    const speechLang =
-      session.language === 'Hindi' || session.language === 'Bilingual (Hindi + English)'
-        ? 'hi-IN'
-        : undefined;
+    const speechLang = session.language && parseLanguage(session.language).base !== 'English'
+      ? languageSpeechCode(session.language)
+      : undefined;
     try {
       await ve.speak(session.narration_script, {
         rate: voiceRate,

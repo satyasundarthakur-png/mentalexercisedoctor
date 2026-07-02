@@ -1,4 +1,5 @@
 import type { UserProfile, SessionJSON, TherapyPlan } from '@/types/session';
+import { parseLanguage } from '@/types/session';
 import { validateAndRepairSession } from './session-validator';
 import type { ConditionKnowledge } from './knowledge-graph';
 import { callGroqProxy } from './groq.functions';
@@ -39,14 +40,12 @@ async function callGroq(
 
 // ─── LANGUAGE INSTRUCTION ────────────────────────────────────────
 function buildLanguageInstruction(language: string): string {
-  switch (language) {
-    case 'Hindi':
-      return `LANGUAGE: All text in simple, warm HINDI (Devanagari). Keep [pause Xs] markers in Latin script.`;
-    case 'Bilingual (Hindi + English)':
-      return `LANGUAGE: Bilingual — short Hindi (Devanagari) line, then its English translation in parentheses, e.g. "गहरी सांस लें (Take a deep breath)." Keep [pause Xs] markers in Latin script.`;
-    default:
-      return `LANGUAGE: Simple, clear ENGLISH.`;
+  const { base, bilingual } = parseLanguage(language);
+  if (base === 'English') return `LANGUAGE: Simple, clear ENGLISH.`;
+  if (bilingual) {
+    return `LANGUAGE: Bilingual — short ${base} line (in ${base}'s native script), then its English translation in parentheses, e.g. a short ${base} phrase followed by "(English translation)". Keep [pause Xs] markers in Latin script.`;
   }
+  return `LANGUAGE: All text in simple, warm ${base} (native script). Keep [pause Xs] markers in Latin script.`;
 }
 
 // ─── SESSION SYSTEM PROMPT ──────────────────────────────────────

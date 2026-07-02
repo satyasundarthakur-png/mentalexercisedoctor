@@ -16,7 +16,7 @@ Mental Exercise Doctor generates a unique, 5-minute-30-second guided mental imag
 
 ## Key features
 
-- 🌐 **English, Hindi, or Bilingual (Hindi + English)** sessions — narration, on-screen text, and title all generated in the chosen language
+- 🌐 **English or a regional Indian language** (Hindi, Telugu, Tamil, Kannada, Malayalam, Bengali, Marathi, Gujarati, Punjabi, Odia, Urdu, Assamese), optionally **bilingual with English** — narration, on-screen text, and title all generated in the chosen language(s)
 - 🗣️ **Male / Female narrator voice** selection, matched to the best available voice on the visitor's device, with a meditative pitch/rate profile as a graceful fallback when only one system voice is available
 - 📝 **Custom / "Other" condition** — describe any condition not in the preset list; the AI reasons about it directly rather than requiring a hardcoded knowledge-base entry
 - 📖 **On-screen narration transcript** so the session can be read along with (or instead of) audio
