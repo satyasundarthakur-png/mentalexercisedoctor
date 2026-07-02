@@ -144,6 +144,27 @@
 }
 
 /* Mental Imagery Therapy custom styles */
+
+/* ── Healing Garden design tokens ─────────────────────────────── */
+:root {
+  --mite-sage: #2f6f5e;
+  --mite-moss: #0f4c3a;
+  --mite-coral: #ff8a65;
+  --mite-marigold: #f4b942;
+  --mite-sky: #4fb8c4;
+  --mite-plum: #a685e2;
+  --mite-cream: #fbf8f2;
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body: 'Manrope', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
+.font-display {
+  font-family: var(--font-display);
+}
+
 :focus-visible {
   outline: 2px solid #0f4c3a;
   outline-offset: 2px;
@@ -167,8 +188,97 @@ input[type='range']::-webkit-slider-thumb {
 }
 .svg-breathe { animation: bodyBreathe 4s ease-in-out infinite; }
 
+/* ── Ambient background animation system ──────────────────────── */
+@keyframes auroraShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-aurora-shift {
+  animation: auroraShift 18s ease-in-out infinite;
+}
+
+@keyframes gradientX {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-x {
+  animation: gradientX 6s ease infinite;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spinSlow 14s linear infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.55; }
+}
+
+@keyframes orbFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(3%, -4%) scale(1.06); }
+  66%  { transform: translate(-3%, 3%) scale(0.96); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: orbFloat 16s ease-in-out infinite;
+}
+.orb-a { width: 26rem; height: 26rem; top: -6rem; left: -6rem; background: radial-gradient(circle, var(--mite-sky), transparent 70%); animation-duration: 19s; }
+.orb-b { width: 22rem; height: 22rem; top: 10%; right: -5rem; background: radial-gradient(circle, var(--mite-plum), transparent 70%); animation-duration: 22s; animation-delay: -4s; }
+.orb-c { width: 20rem; height: 20rem; bottom: -4rem; left: 15%; background: radial-gradient(circle, var(--mite-coral), transparent 70%); animation-duration: 17s; animation-delay: -8s; }
+.orb-d { width: 18rem; height: 18rem; bottom: 5%; right: 10%; background: radial-gradient(circle, var(--mite-marigold), transparent 70%); animation-duration: 20s; animation-delay: -2s; }
+.orb-e { width: 16rem; height: 16rem; top: 40%; left: 45%; background: radial-gradient(circle, var(--mite-sage), transparent 70%); animation-duration: 24s; animation-delay: -12s; }
+
+/* Softer, contained orb set for cards on the form/player pages */
+.orb-soft { position: absolute; border-radius: 9999px; filter: blur(50px); opacity: 0.35; animation: orbFloat 20s ease-in-out infinite; }
+
+@keyframes breatheRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 184, 196, 0.0), 0 0 0 0 rgba(255, 138, 101, 0.0); }
+  50% { box-shadow: 0 0 0 6px rgba(79, 184, 196, 0.08), 0 0 40px 8px rgba(255, 138, 101, 0.10); }
+}
+.animate-breathe-ring {
+  animation: breatheRing 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.animate-float-slow {
+  animation: floatSlow 5s ease-in-out infinite;
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-slide {
+  animation: fadeSlideUp 0.5s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-orb-pulse, .animate-breathe, .animate-fade-slide, .animate-spin-slow, .svg-breathe {
+  .animate-orb-pulse, .animate-breathe, .animate-fade-slide, .animate-spin-slow, .svg-breathe,
+  .orb, .orb-soft, .animate-aurora-shift, .animate-gradient-x, .animate-breathe-ring,
+  .animate-shimmer, .animate-float-slow {
     animation: none !important;
   }
 }

@@ -82,7 +82,7 @@ function Index() {
                 Mental Motor Imagery Therapy Engine
               </motion.p>
 
-              <h1 className="text-4xl sm:text-6xl font-bold tracking-tight mt-4 leading-[1.05]">
+              <h1 className="font-display text-4xl sm:text-6xl font-medium tracking-tight mt-4 leading-[1.05]">
                 <span className="text-white/95 drop-shadow-[0_2px_20px_rgba(180,140,255,0.35)]">
                   Create your personalized
                 </span>

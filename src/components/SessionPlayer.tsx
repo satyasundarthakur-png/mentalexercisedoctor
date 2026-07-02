@@ -194,14 +194,29 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
 
   const intensity = currentPhase?.phase?.toLowerCase().includes('imagery') ? 'high' : 'medium';
 
+  // Same healing-garden palette as the profile form, so the two pages read as one system.
+  const PALETTE = ['#4fb8c4', '#ff8a65', '#f4b942', '#a685e2', '#2f6f5e'];
+
   return (
-    <div className="bg-white rounded-4xl shadow-xl overflow-hidden border border-[#e6e3d9]">
+    <div className="relative">
+      <div aria-hidden className="pointer-events-none absolute -inset-12 -z-10 overflow-hidden rounded-[3rem]">
+        <div className="orb-soft" style={{ width: '18rem', height: '18rem', top: '-5rem', right: '-4rem', background: `radial-gradient(circle, ${PALETTE[0]}, transparent 70%)` }} />
+        <div className="orb-soft" style={{ width: '16rem', height: '16rem', bottom: '-4rem', left: '-3rem', background: `radial-gradient(circle, ${PALETTE[3]}, transparent 70%)`, animationDelay: '-9s' }} />
+      </div>
+
+      <div className="relative bg-white rounded-4xl shadow-xl overflow-hidden border border-[#e6e3d9]">
+      {/* Colorful top accent stripe */}
+      <div
+        aria-hidden
+        className="h-1.5 w-full bg-[length:300%_100%] animate-gradient-x"
+        style={{ backgroundImage: `linear-gradient(90deg, ${PALETTE[0]}, ${PALETTE[1]}, ${PALETTE[2]}, ${PALETTE[3]}, ${PALETTE[0]})` }}
+      />
       {/* ── HEADER ───────────────────────────────────────────────── */}
       <header className="px-8 pt-7 pb-5 border-b border-[#e6e3d9]">
         <div className="flex justify-between items-start gap-4">
           <div className="min-w-0">
             <p className="text-[10px] tracking-[3px] text-[#5c6b5c] uppercase">5-Minute guided session</p>
-            <h2 className="text-2xl font-light tracking-tight mt-1 text-[#2c3e2d] leading-snug">
+            <h2 className="font-display text-2xl font-medium tracking-tight mt-1 text-[#2c3e2d] leading-snug">
               {session.session_title}
             </h2>
             <p className="text-xs text-[#5c6b5c] mt-1">
@@ -220,7 +235,10 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
       </header>
 
       {/* ── VISUAL STAGE ─────────────────────────────────────────── */}
-      <div className="relative bg-gradient-to-br from-[#f8f7f4] to-[#f0ede4] px-8 py-8 pb-20 min-h-72">
+      <div
+        className="relative px-8 py-8 pb-20 min-h-72 bg-[length:220%_220%] animate-aurora-shift"
+        style={{ backgroundImage: `linear-gradient(135deg, #f8f7f4 0%, ${PALETTE[0]}14 30%, #f0ede4 55%, ${PALETTE[3]}12 80%, #f8f7f4 100%)` }}
+      >
         <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full max-w-3xl mx-auto">
           {/* Body Visualizer */}
           <div className="flex-shrink-0">
@@ -237,12 +255,13 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
               {isBreathing ? (
                 <motion.div
                   key="breathing-orb"
-                  className="w-52 h-52 mx-auto rounded-full border-[12px] border-[#0f4c3a] flex items-center justify-center mb-4"
+                  className="w-52 h-52 mx-auto rounded-full flex items-center justify-center mb-4 animate-breathe-ring"
+                  style={{ border: `12px solid ${PALETTE[0]}`, borderImage: `linear-gradient(135deg, ${PALETTE[0]}, ${PALETTE[1]}) 1` }}
                   animate={{ scale: [1, 1.08, 1] }}
                   transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
                 >
                   <div className="text-center">
-                    <p className="text-5xl font-light text-[#0f4c3a] leading-none">4 — 7</p>
+                    <p className="text-5xl font-display font-medium text-[#0f4c3a] leading-none">4 — 7</p>
                     <p className="text-[10px] tracking-[2px] text-[#5c6b5c] mt-2">INHALE · EXHALE</p>
                   </div>
                 </motion.div>
@@ -254,8 +273,8 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.35 }}
                 >
-                  <div className="text-5xl mb-3">🧘</div>
-                  <p className="text-3xl font-light text-[#2c3e2d] tracking-tight">
+                  <div className="text-5xl mb-3 animate-float-slow">🧘</div>
+                  <p className="font-display text-3xl font-medium text-[#2c3e2d] tracking-tight">
                     {currentPhase?.phase ?? 'Ready'}
                   </p>
                 </motion.div>
@@ -290,7 +309,9 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
         <button
           onClick={togglePlay}
           aria-label={isPlaying ? 'Pause session' : 'Play session'}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0f4c3a] text-white text-xl hover:bg-[#0a3a2b] active:scale-95 transition-all flex-shrink-0"
+          className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#0f4c3a] to-[#2f6f5e] text-white text-xl hover:from-[#0a3a2b] hover:to-[#0f4c3a] active:scale-95 transition-all flex-shrink-0 ${
+            isPlaying ? 'animate-breathe-ring' : ''
+          }`}
         >
           {isPlaying ? '⏸' : '▶'}
         </button>
@@ -373,10 +394,13 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
       {/* ── PROGRESS + TIMELINE PHASES ──────────────────────────── */}
       <div className="px-8 py-5 border-b border-[#e6e3d9]">
         {/* Progress bar */}
-        <div className="h-1 bg-[#e6e3d9] rounded-full mb-3 overflow-hidden">
+        <div className="h-1.5 bg-[#e6e3d9] rounded-full mb-3 overflow-hidden">
           <motion.div
-            className="h-full bg-[#0f4c3a] rounded-full"
-            style={{ width: `${progressPct}%` }}
+            className="h-full rounded-full bg-[length:300%_100%] animate-gradient-x"
+            style={{
+              width: `${progressPct}%`,
+              backgroundImage: `linear-gradient(90deg, ${PALETTE[0]}, ${PALETTE[4]}, ${PALETTE[1]})`,
+            }}
             transition={{ duration: 1, ease: 'linear' }}
           />
         </div>
@@ -388,9 +412,10 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
               key={index}
               onClick={() => seekToPhase(index)}
               aria-label={`Jump to phase ${index + 1}: ${session.timeline[index].phase}`}
+              style={{ backgroundColor: index === currentPhaseIdx ? PALETTE[index % PALETTE.length] : undefined }}
               className={`h-1.5 flex-1 rounded-full transition-all ${
                 index === currentPhaseIdx
-                  ? 'bg-[#0f4c3a]'
+                  ? ''
                   : 'bg-[#d4d0c4] hover:bg-[#b8b3a3]'
               }`}
             />
@@ -403,8 +428,9 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
             <button
               key={i}
               onClick={() => seekToPhase(i)}
+              style={{ color: i === currentPhaseIdx ? PALETTE[i % PALETTE.length] : undefined }}
               className={`text-[9px] text-center flex-1 transition-colors truncate px-px ${
-                i === currentPhaseIdx ? 'text-[#0f4c3a] font-medium' : 'text-[#6b7a6b]'
+                i === currentPhaseIdx ? 'font-semibold' : 'text-[#6b7a6b]'
               }`}
             >
               {p.phase?.split(' ')[0]}
@@ -425,7 +451,11 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ delay: i * 0.05 }}
-                className="px-3 py-1 rounded-full bg-[#f8f7f4] text-xs border border-[#d4d0c4] text-[#2c3e2d]"
+                style={{
+                  borderColor: `${PALETTE[i % PALETTE.length]}55`,
+                  backgroundColor: `${PALETTE[i % PALETTE.length]}12`,
+                }}
+                className="px-3 py-1 rounded-full text-xs border text-[#2c3e2d]"
               >
                 {area}
               </motion.span>
@@ -476,6 +506,7 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
           This is mental rehearsal only — it complements, never replaces, professional medical and rehabilitation care. Always consult your healthcare provider before beginning any therapy programme.
         </p>
       </footer>
+      </div>
     </div>
   );
 }
