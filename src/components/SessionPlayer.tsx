@@ -36,6 +36,7 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
   const [voiceRate, setVoiceRate] = useState(0.88);
   const [showJson, setShowJson] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [voiceWarning, setVoiceWarning] = useState('');
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -136,12 +137,14 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
     }
     ve.setRate(voiceRate);
     setIsSpeaking(true);
+    setVoiceWarning('');
     const speechLang =
       session.language === 'Hindi' || session.language === 'Bilingual (Hindi + English)'
         ? 'hi-IN'
         : undefined;
     try {
       await ve.speak(session.narration_script, { rate: voiceRate, lang: speechLang });
+      if (ve.lastNoVoiceWarning) setVoiceWarning(ve.lastNoVoiceWarning);
     } catch (err) {
       console.error('TTS error:', err);
     } finally {
@@ -323,6 +326,12 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
           {formatTime(currentTime)} / 5:30
         </p>
       </div>
+
+      {voiceWarning && (
+        <div className="mx-8 mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+          ⚠ {voiceWarning}
+        </div>
+      )}
 
       {/* ── PROGRESS + TIMELINE PHASES ──────────────────────────── */}
       <div className="px-8 py-5 border-b border-[#e6e3d9]">
