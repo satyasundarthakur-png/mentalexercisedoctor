@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import type { UserProfile, SafetyCheckResult, LanguageOption } from '@/types/session';
+import type { UserProfile, SafetyCheckResult, LanguageOption, VoiceGender } from '@/types/session';
 import { CONDITIONS, LANGUAGES } from '@/types/session';
 import { performSafetyCheck } from '@/lib/safety-layer';
 import { createTherapyPlan } from '@/lib/therapy-planner';
@@ -31,6 +31,7 @@ const DEFAULT_PROFILE: UserProfile = {
   stressLevel: 'Moderate',
   fitnessGoal: 'Improve arm function, walk more confidently, and sleep better',
   language: 'English',
+  voiceGender: 'Female',
   customConditionDetails: '',
 };
 
@@ -165,21 +166,38 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
         </div>
       </div>
 
-      {/* ── LANGUAGE ───────────────────────────────────────────────── */}
-      <div className="mb-5">
-        <label className={labelCls} htmlFor="language">
-          Session language
-        </label>
-        <select
-          id="language"
-          value={profile.language}
-          onChange={(e) => updateField('language', e.target.value as LanguageOption)}
-          className={inputCls}
-        >
-          {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
-        </select>
-        <p className="text-[10px] text-[#8a9a8a] mt-1">
+      {/* ── LANGUAGE + VOICE GENDER ───────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+        <div>
+          <label className={labelCls} htmlFor="language">
+            Session language
+          </label>
+          <select
+            id="language"
+            value={profile.language}
+            onChange={(e) => updateField('language', e.target.value as LanguageOption)}
+            className={inputCls}
+          >
+            {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls} htmlFor="voiceGender">
+            Narrator voice
+          </label>
+          <select
+            id="voiceGender"
+            value={profile.voiceGender}
+            onChange={(e) => updateField('voiceGender', e.target.value as VoiceGender)}
+            className={inputCls}
+          >
+            <option value="Female">Female — calm & soothing</option>
+            <option value="Male">Male — deep & meditative</option>
+          </select>
+        </div>
+        <p className="text-[10px] text-[#8a9a8a] sm:col-span-2 -mt-3">
           Choose Hindi or Bilingual to have narration and on-screen text in Hindi alongside English.
+          We'll match the nearest available male/female voice on your device for a meditative tone.
         </p>
       </div>
 

@@ -208,6 +208,7 @@ ${profile.primaryCondition.startsWith('Other') ? `NOTE: This is a user-specified
       if (result.isValid || result.repaired) {
         if (!session) throw new Error('Session is null after validation');
         session.language = profile.language;
+        session.voiceGender = profile.voiceGender;
         return session;
       }
 

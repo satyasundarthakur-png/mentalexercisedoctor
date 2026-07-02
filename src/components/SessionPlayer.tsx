@@ -37,6 +37,7 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
   const [showJson, setShowJson] = useState(false);
   const [copied, setCopied] = useState(false);
   const [voiceWarning, setVoiceWarning] = useState('');
+  const [showTranscript, setShowTranscript] = useState(true);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -143,14 +144,24 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
         ? 'hi-IN'
         : undefined;
     try {
-      await ve.speak(session.narration_script, { rate: voiceRate, lang: speechLang });
-      if (ve.lastNoVoiceWarning) setVoiceWarning(ve.lastNoVoiceWarning);
+      await ve.speak(session.narration_script, {
+        rate: voiceRate,
+        lang: speechLang,
+        voiceGender: session.voiceGender,
+      });
+      if (ve.lastNoVoiceWarning) {
+        const voicesList = ve.lastDetectedVoiceLabels;
+        const listPreview = voicesList.length
+          ? ` Voices detected on this device: ${voicesList.slice(0, 8).join(', ')}${voicesList.length > 8 ? '…' : ''}`
+          : ' No voices were detected on this device/browser at all.';
+        setVoiceWarning(ve.lastNoVoiceWarning + listPreview);
+      }
     } catch (err) {
       console.error('TTS error:', err);
     } finally {
       setIsSpeaking(false);
     }
-  }, [session.narration_script, session.language, voiceRate]);
+  }, [session.narration_script, session.language, session.voiceGender, voiceRate]);
 
   const adjustRate = useCallback((delta: number) => {
     setVoiceRate((r) => {
@@ -320,6 +331,17 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
           </button>
         </div>
 
+        <button
+          onClick={() => setShowTranscript((s) => !s)}
+          className={`px-4 py-2 rounded-full border text-sm transition-colors ${
+            showTranscript
+              ? 'border-[#0f4c3a] bg-[#f0fdf4] text-[#0f4c3a]'
+              : 'border-[#c8c3b8] hover:bg-[#f8f7f4] text-[#2c3e2d]'
+          }`}
+        >
+          📝 {showTranscript ? 'Hide transcript' : 'Show transcript'}
+        </button>
+
         <div className="flex-1" />
 
         <p className="font-mono text-xs text-[#5c6b5c]">
@@ -330,6 +352,21 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
       {voiceWarning && (
         <div className="mx-8 mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
           ⚠ {voiceWarning}
+        </div>
+      )}
+
+      {showTranscript && (
+        <div className="mx-8 mt-4 rounded-2xl border border-[#e6e3d9] bg-[#faf9f6] p-5">
+          <p className="text-[10px] font-semibold tracking-[0.14em] uppercase text-[#5c6b5c] mb-2">
+            Narration transcript {session.language ? `· ${session.language}` : ''}
+          </p>
+          <p className="text-sm text-[#2c3e2d] leading-relaxed whitespace-pre-wrap">
+            {session.narration_script
+              .split(/\[pause[^\]]*\]/gi)
+              .map((chunk) => chunk.trim())
+              .filter(Boolean)
+              .join('  ⏸  ')}
+          </p>
         </div>
       )}
 

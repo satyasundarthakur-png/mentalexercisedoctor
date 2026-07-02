@@ -1,21 +1,43 @@
-import type { VoiceOptions } from '@/types/session';
+import type { VoiceOptions, VoiceGender } from '@/types/session';
 
 /**
  * Voice Engine — modular, SSR-safe browser TTS abstraction.
  *
  * Instantiated lazily on first use, avoiding SSR / server-side crashes.
- * Supports rate, pitch, volume, and preferred voice selection.
- * Gracefully degrades when Web Speech API is unavailable.
+ * Supports rate, pitch, volume, language, and gender-aware voice selection,
+ * with a "meditative" pitch/rate profile and diagnostics for troubleshooting
+ * missing platform voices (most common cause of "no Hindi audio" reports).
  */
 
 // Known Hindi voice names across platforms (Windows/Edge, macOS/Safari, Android/Chrome)
 const HINDI_VOICE_NAME_HINTS = [
   'hindi', 'हिन्दी', 'हिंदी',
-  'lekha',            // macOS/iOS
-  'kalpana', 'hemant', // Windows legacy
-  'swara', 'madhur',   // Windows/Edge neural voices
+  'lekha',              // macOS/iOS (female)
+  'kalpana', 'hemant',  // Windows legacy (female / male)
+  'swara', 'madhur',    // Windows/Edge neural (female / male)
   'rishi',
 ];
+
+// Best-effort gender hints — the Web Speech API has no standard gender field,
+// so we infer from well-known voice names across platforms.
+const FEMALE_NAME_HINTS = [
+  'female', 'woman',
+  'samantha', 'karen', 'moira', 'zira', 'victoria', 'susan', 'fiona', 'tessa',
+  'ava', 'allison', 'salli', 'joanna', 'kendra', 'kimberly',
+  'swara', 'kalpana', 'lekha', // Hindi female voices
+];
+const MALE_NAME_HINTS = [
+  'male', 'man',
+  'daniel', 'alex', 'fred', 'david', 'mark', 'george', 'james', 'justin', 'matthew', 'thomas',
+  'madhur', 'hemant', 'rishi', // Hindi male voices
+];
+
+function guessGender(voiceName: string): VoiceGender | null {
+  const n = voiceName.toLowerCase();
+  if (FEMALE_NAME_HINTS.some((h) => n.includes(h))) return 'Female';
+  if (MALE_NAME_HINTS.some((h) => n.includes(h))) return 'Male';
+  return null;
+}
 
 class BrowserVoiceEngine {
   private synth: SpeechSynthesis | null;
@@ -23,6 +45,8 @@ class BrowserVoiceEngine {
   private _isSpeaking = false;
   private _rate = 0.88;
   private _lastNoVoiceWarning = '';
+  private _lastVoicesSnapshot: SpeechSynthesisVoice[] = [];
+  private _lastPickedVoiceLabel = '';
 
   constructor() {
     this.synth = typeof speechSynthesis !== 'undefined' ? speechSynthesis : null;
@@ -35,6 +59,16 @@ class BrowserVoiceEngine {
   /** Last warning raised when a requested language had no matching installed voice. */
   get lastNoVoiceWarning(): string {
     return this._lastNoVoiceWarning;
+  }
+
+  /** Human-readable list of every voice this browser/device reported (for diagnostics). */
+  get lastDetectedVoiceLabels(): string[] {
+    return this._lastVoicesSnapshot.map((v) => `${v.name} (${v.lang})`);
+  }
+
+  /** Which voice was actually used for the last speak() call. */
+  get lastPickedVoiceLabel(): string {
+    return this._lastPickedVoiceLabel;
   }
 
   // Chrome/Edge/Firefox often return an empty voices array on the very first
@@ -70,18 +104,38 @@ class BrowserVoiceEngine {
     });
   }
 
-  private findVoiceForLang(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | null {
+  /** All voices that plausibly speak the requested language (lang-code or name-hint match). */
+  private candidatesForLang(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice[] {
     const langLower = lang.toLowerCase();
     const langPrefix = langLower.split('-')[0]; // e.g. "hi" from "hi-IN"
+    const isHindi = langPrefix === 'hi';
 
-    return (
-      voices.find((v) => v.lang?.toLowerCase() === langLower) ||
-      voices.find((v) => v.lang?.toLowerCase().startsWith(langPrefix)) ||
-      voices.find((v) =>
-        HINDI_VOICE_NAME_HINTS.some((hint) => v.name.toLowerCase().includes(hint))
-      ) ||
-      null
-    );
+    const exact = voices.filter((v) => v.lang?.toLowerCase() === langLower);
+    const prefixMatch = voices.filter((v) => v.lang?.toLowerCase().startsWith(langPrefix));
+    const nameMatch = isHindi
+      ? voices.filter((v) => HINDI_VOICE_NAME_HINTS.some((hint) => v.name.toLowerCase().includes(hint)))
+      : [];
+
+    // Merge, de-duplicated, preserving priority order: exact lang > prefix lang > name hint
+    const merged: SpeechSynthesisVoice[] = [];
+    for (const list of [exact, prefixMatch, nameMatch]) {
+      for (const v of list) {
+        if (!merged.includes(v)) merged.push(v);
+      }
+    }
+    return merged;
+  }
+
+  private pickVoice(
+    candidates: SpeechSynthesisVoice[],
+    genderPref?: VoiceGender
+  ): SpeechSynthesisVoice | null {
+    if (candidates.length === 0) return null;
+    if (genderPref) {
+      const genderMatch = candidates.find((v) => guessGender(v.name) === genderPref);
+      if (genderMatch) return genderMatch;
+    }
+    return candidates[0];
   }
 
   async speak(text: string, options: VoiceOptions = {}): Promise<void> {
@@ -91,8 +145,10 @@ class BrowserVoiceEngine {
 
     this.stop();
     this._lastNoVoiceWarning = '';
+    this._lastPickedVoiceLabel = '';
 
     const voices = await this.waitForVoices();
+    this._lastVoicesSnapshot = voices;
 
     return new Promise((resolve, reject) => {
       if (!this.synth) {
@@ -105,43 +161,87 @@ class BrowserVoiceEngine {
       utterance.pitch = options.pitch ?? 1.0;
       utterance.volume = options.volume ?? 0.85;
 
+      // Meditative pitch shaping: even when a device only exposes ONE Hindi
+      // (or English) voice, we still give a perceptibly different, calmer
+      // male/female character by shaping pitch/rate slightly — a common
+      // technique since Web Speech API rarely offers two Hindi voices.
+      const applyMeditativeShape = (gender: VoiceGender | undefined, hadExactGenderVoice: boolean) => {
+        if (!gender || hadExactGenderVoice) return; // real distinct voice already sounds right
+        if (gender === 'Male') {
+          utterance.pitch = (options.pitch ?? 1.0) * 0.86; // deeper, calmer
+          utterance.rate = (options.rate ?? this._rate) * 0.96;
+        } else {
+          utterance.pitch = (options.pitch ?? 1.0) * 1.08; // softer, warmer
+          utterance.rate = (options.rate ?? this._rate) * 0.98;
+        }
+      };
+
       if (options.lang) {
-        const langVoice = this.findVoiceForLang(voices, options.lang);
-        if (langVoice) {
-          utterance.voice = langVoice;
-          utterance.lang = langVoice.lang;
+        const candidates = this.candidatesForLang(voices, options.lang);
+        const picked = this.pickVoice(candidates, options.voiceGender);
+
+        if (picked) {
+          utterance.voice = picked;
+          utterance.lang = picked.lang;
+          this._lastPickedVoiceLabel = `${picked.name} (${picked.lang})`;
+          const exactGenderMatch = options.voiceGender
+            ? guessGender(picked.name) === options.voiceGender
+            : true;
+          applyMeditativeShape(options.voiceGender, exactGenderMatch);
         } else {
           // No matching voice installed on this device for the requested
           // language. Setting utterance.lang without a matching voice makes
           // Chrome/Edge fail SILENTLY (no error, no audio) — so instead we
-          // fall back to the default voice/lang and surface a clear warning
-          // rather than leaving the user with dead air.
+          // fall back to a gender-matched default-language voice (or the
+          // browser default) and surface a clear warning + voice list.
+          const fallback = this.pickVoice(voices, options.voiceGender);
+          if (fallback) {
+            utterance.voice = fallback;
+            this._lastPickedVoiceLabel = `${fallback.name} (${fallback.lang}) — fallback, not Hindi`;
+            applyMeditativeShape(options.voiceGender, false);
+          }
           this._lastNoVoiceWarning =
-            `No installed voice found for "${options.lang}" on this device/browser. ` +
-            `Falling back to the default voice. To hear Hindi narration, install a Hindi ` +
-            `text-to-speech voice in your device settings (e.g. Android: Settings → ` +
-            `System → Languages → Text-to-speech → install Hindi; Windows: Settings → ` +
-            `Time & Language → Speech → add Hindi).`;
-          console.warn('[voice-engine]', this._lastNoVoiceWarning, 'Available voices:', voices.map((v) => `${v.name} (${v.lang})`));
+            `No installed Hindi voice found for "${options.lang}" on this device/browser. ` +
+            `Speaking with an available voice instead. To hear true Hindi narration, install a ` +
+            `Hindi text-to-speech voice: Android → Settings → System → Languages → Text-to-speech ` +
+            `→ install "Hindi (India)"; Windows → Settings → Time & Language → Speech → Add a voice → Hindi; ` +
+            `macOS/iOS → Settings → Accessibility → Spoken Content → Voices → add Hindi.`;
+          console.warn(
+            '[voice-engine] No Hindi voice found. Detected voices:',
+            voices.map((v) => `${v.name} (${v.lang})`)
+          );
         }
       } else {
-        // Try to select a calm, natural-sounding English voice
-        const preferred = voices.find(
-          (v) =>
-            v.name.includes('Samantha') ||
-            v.name.includes('Karen') ||
-            v.name.includes('Moira') ||
-            v.name.includes('Google UK English Female') ||
-            v.name.includes('Microsoft Zira')
-        );
-        if (preferred) utterance.voice = preferred;
+        // English (or unspecified language) — pick by gender preference among en-* voices,
+        // falling back to well-known calm English voice names.
+        const enCandidates = voices.filter((v) => v.lang?.toLowerCase().startsWith('en'));
+        const picked =
+          this.pickVoice(enCandidates, options.voiceGender) ||
+          voices.find(
+            (v) =>
+              v.name.includes('Samantha') ||
+              v.name.includes('Karen') ||
+              v.name.includes('Moira') ||
+              v.name.includes('Google UK English Female') ||
+              v.name.includes('Microsoft Zira')
+          ) ||
+          null;
+        if (picked) {
+          utterance.voice = picked;
+          this._lastPickedVoiceLabel = `${picked.name} (${picked.lang})`;
+          const exactGenderMatch = options.voiceGender ? guessGender(picked.name) === options.voiceGender : true;
+          applyMeditativeShape(options.voiceGender, exactGenderMatch);
+        }
       }
 
       if (options.voiceName) {
         const named = voices.find((v) =>
           v.name.toLowerCase().includes(options.voiceName!.toLowerCase())
         );
-        if (named) utterance.voice = named;
+        if (named) {
+          utterance.voice = named;
+          this._lastPickedVoiceLabel = `${named.name} (${named.lang})`;
+        }
       }
 
       utterance.onend = () => {
@@ -196,7 +296,9 @@ class BrowserVoiceEngine {
   }
 
   async getAvailableVoices(): Promise<SpeechSynthesisVoice[]> {
-    return this.waitForVoices();
+    const voices = await this.waitForVoices();
+    this._lastVoicesSnapshot = voices;
+    return voices;
   }
 }
 

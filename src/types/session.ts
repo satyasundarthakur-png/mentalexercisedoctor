@@ -25,6 +25,7 @@ export interface SessionJSON {
   estimated_emotional_impact: string;
   user_profile_summary?: string;
   language?: LanguageOption;
+  voiceGender?: VoiceGender;
   timeline: TimelinePhase[];
   narration_script: string;
   screen_text: ScreenTextItem[];
@@ -35,6 +36,7 @@ export interface SessionJSON {
 }
 
 export type LanguageOption = 'English' | 'Hindi' | 'Bilingual (Hindi + English)';
+export type VoiceGender = 'Female' | 'Male';
 
 export interface UserProfile {
   age: number;
@@ -49,6 +51,7 @@ export interface UserProfile {
   stressLevel: 'Low' | 'Moderate' | 'High';
   fitnessGoal: string;
   language: LanguageOption;
+  voiceGender: VoiceGender;
 }
 
 export interface TherapyPlan {
@@ -87,6 +90,7 @@ export interface VoiceOptions {
   volume?: number;
   voiceName?: string;
   lang?: string;
+  voiceGender?: VoiceGender;
 }
 
 export interface ChatMessage {
