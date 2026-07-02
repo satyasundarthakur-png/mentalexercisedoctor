@@ -37,12 +37,26 @@ async function callGroq(
   return content;
 }
 
+// ─── LANGUAGE INSTRUCTION ────────────────────────────────────────
+function buildLanguageInstruction(language: string): string {
+  switch (language) {
+    case 'Hindi':
+      return `LANGUAGE: Write ALL user-facing text — session_title, narration_script, screen_text, motivation_summary, safety_notes, animation_cues, voice_recommendation — entirely in HINDI using Devanagari script. Keep it warm, simple, and easy to follow when spoken aloud. [pause Xs] markers stay as-is (Latin characters, not translated).`;
+    case 'Bilingual (Hindi + English)':
+      return `LANGUAGE: Write ALL user-facing text bilingually — for EVERY sentence or short passage, give the Hindi (Devanagari script) version FIRST, immediately followed by its English translation in parentheses or on the next line, e.g. "गहरी सांस लें (Take a deep breath)." Do this consistently through session_title, narration_script, screen_text items, motivation_summary, and safety_notes, so a listener hears/reads both languages together. [pause Xs] markers stay as-is (Latin characters, not translated).`;
+    default:
+      return `LANGUAGE: Write ALL user-facing text in clear, simple ENGLISH.`;
+  }
+}
+
 // ─── SESSION SYSTEM PROMPT ──────────────────────────────────────
-function buildSessionSystemPrompt(plan: TherapyPlan, knowledge: ConditionKnowledge | null): string {
+function buildSessionSystemPrompt(plan: TherapyPlan, knowledge: ConditionKnowledge | null, language: string): string {
   return `You are the World-Class AI Session Composer for the Mental Motor Imagery Therapy Engine.
 Your task is to generate a single unique, coherent, 5-minute 30-second guided mental imagery session.
 
 OUTPUT FORMAT: Valid JSON ONLY. No markdown fences. No extra text before or after the JSON object.
+
+${buildLanguageInstruction(language)}
 
 THERAPY PLAN (clinical reasoning already performed — use this to shape the session):
 - Primary Goals: ${plan.primaryGoals.join('; ')}
@@ -118,18 +132,23 @@ export async function generateTherapySession(
   knowledge: ConditionKnowledge | null,
   retries = 2
 ): Promise<SessionJSON> {
+  const conditionLabel = profile.primaryCondition.startsWith('Other')
+    ? sanitizeInput(profile.customConditionDetails || 'Unspecified condition — use general safe wellbeing guidance')
+    : sanitizeInput(profile.primaryCondition);
+
   const userMessage = `User Profile:
 - Age: ${profile.age}, Gender: ${profile.gender}
-- Primary Condition: ${sanitizeInput(profile.primaryCondition)}
+- Primary Condition: ${conditionLabel}
 - Secondary Conditions: ${(profile.secondaryConditions || []).map(sanitizeInput).join(', ') || 'None'}
 - Pain Level: ${profile.painLevel}/10
 - Mobility: ${profile.mobilityLevel}, Energy: ${profile.energyLevel}
 - Stress: ${profile.stressLevel}, Sleep Quality: ${profile.sleepQuality}
 - Personal Goal: ${sanitizeInput(profile.fitnessGoal || 'General wellbeing and rehabilitation')}
+- Preferred Language: ${profile.language}
 
-Generate a unique, personalized 5-minute 30-second mental imagery session as valid JSON only.`;
+${profile.primaryCondition.startsWith('Other') ? `NOTE: This is a user-specified / non-standard condition not in the built-in knowledge base. Use your own clinical reasoning to research and infer sensible functional goals, contraindications, and imagery themes for "${conditionLabel}" and design the session accordingly, erring on the side of caution and gentleness.\n\n` : ''}Generate a unique, personalized 5-minute 30-second mental imagery session as valid JSON only.`;
 
-  const systemPrompt = buildSessionSystemPrompt(therapyPlan, knowledge);
+  const systemPrompt = buildSessionSystemPrompt(therapyPlan, knowledge, profile.language);
 
   let lastRawContent = '';
   let lastErrors: string[] = [];
@@ -188,6 +207,7 @@ Generate a unique, personalized 5-minute 30-second mental imagery session as val
 
       if (result.isValid || result.repaired) {
         if (!session) throw new Error('Session is null after validation');
+        session.language = profile.language;
         return session;
       }
 

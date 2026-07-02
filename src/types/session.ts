@@ -24,6 +24,7 @@ export interface SessionJSON {
   difficulty_level: string;
   estimated_emotional_impact: string;
   user_profile_summary?: string;
+  language?: LanguageOption;
   timeline: TimelinePhase[];
   narration_script: string;
   screen_text: ScreenTextItem[];
@@ -33,10 +34,13 @@ export interface SessionJSON {
   safety_notes: string;
 }
 
+export type LanguageOption = 'English' | 'Hindi' | 'Bilingual (Hindi + English)';
+
 export interface UserProfile {
   age: number;
   gender: string;
   primaryCondition: string;
+  customConditionDetails?: string;
   secondaryConditions: string[];
   painLevel: number;
   mobilityLevel: 'Low' | 'Moderate' | 'High';
@@ -44,6 +48,7 @@ export interface UserProfile {
   sleepQuality: 'Poor' | 'Fair' | 'Good';
   stressLevel: 'Low' | 'Moderate' | 'High';
   fitnessGoal: string;
+  language: LanguageOption;
 }
 
 export interface TherapyPlan {
@@ -81,6 +86,7 @@ export interface VoiceOptions {
   pitch?: number;
   volume?: number;
   voiceName?: string;
+  lang?: string;
 }
 
 export interface ChatMessage {
@@ -102,4 +108,7 @@ export const CONDITIONS = [
   'Fibromyalgia',
   'Healthy ageing',
   'Sedentary lifestyle',
+  'Other (type your own / search with AI)',
 ] as const;
+
+export const LANGUAGES: LanguageOption[] = ['English', 'Hindi', 'Bilingual (Hindi + English)'];

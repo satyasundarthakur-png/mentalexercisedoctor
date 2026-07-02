@@ -36,17 +36,29 @@ class BrowserVoiceEngine {
       utterance.pitch = options.pitch ?? 1.0;
       utterance.volume = options.volume ?? 0.85;
 
-      // Try to select a calm, natural-sounding voice
       const voices = this.synth.getVoices();
-      const preferred = voices.find(
-        (v) =>
-          v.name.includes('Samantha') ||
-          v.name.includes('Karen') ||
-          v.name.includes('Moira') ||
-          v.name.includes('Google UK English Female') ||
-          v.name.includes('Microsoft Zira')
-      );
-      if (preferred) utterance.voice = preferred;
+
+      if (options.lang) {
+        // Language-specific selection (e.g. Hindi hi-IN)
+        utterance.lang = options.lang;
+        const langPrefix = options.lang.split('-')[0].toLowerCase();
+        const langVoice =
+          voices.find((v) => v.lang?.toLowerCase() === options.lang!.toLowerCase()) ||
+          voices.find((v) => v.lang?.toLowerCase().startsWith(langPrefix)) ||
+          voices.find((v) => v.name.toLowerCase().includes(langPrefix === 'hi' ? 'hindi' : langPrefix));
+        if (langVoice) utterance.voice = langVoice;
+      } else {
+        // Try to select a calm, natural-sounding English voice
+        const preferred = voices.find(
+          (v) =>
+            v.name.includes('Samantha') ||
+            v.name.includes('Karen') ||
+            v.name.includes('Moira') ||
+            v.name.includes('Google UK English Female') ||
+            v.name.includes('Microsoft Zira')
+        );
+        if (preferred) utterance.voice = preferred;
+      }
 
       if (options.voiceName) {
         const named = voices.find((v) =>

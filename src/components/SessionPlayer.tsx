@@ -136,14 +136,18 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
     }
     ve.setRate(voiceRate);
     setIsSpeaking(true);
+    const speechLang =
+      session.language === 'Hindi' || session.language === 'Bilingual (Hindi + English)'
+        ? 'hi-IN'
+        : undefined;
     try {
-      await ve.speak(session.narration_script, { rate: voiceRate });
+      await ve.speak(session.narration_script, { rate: voiceRate, lang: speechLang });
     } catch (err) {
       console.error('TTS error:', err);
     } finally {
       setIsSpeaking(false);
     }
-  }, [session.narration_script, voiceRate]);
+  }, [session.narration_script, session.language, voiceRate]);
 
   const adjustRate = useCallback((delta: number) => {
     setVoiceRate((r) => {
@@ -189,6 +193,7 @@ export default function SessionPlayer({ session, onReset }: SessionPlayerProps) 
             <p className="text-xs text-[#5c6b5c] mt-1">
               {session.medical_category}
               {session.difficulty_level ? ` · ${session.difficulty_level}` : ''}
+              {session.language ? ` · ${session.language}` : ''}
             </p>
           </div>
           <div className="flex-shrink-0 text-right text-xs text-[#5c6b5c]">

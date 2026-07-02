@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import type { UserProfile, SafetyCheckResult } from '@/types/session';
-import { CONDITIONS } from '@/types/session';
+import type { UserProfile, SafetyCheckResult, LanguageOption } from '@/types/session';
+import { CONDITIONS, LANGUAGES } from '@/types/session';
 import { performSafetyCheck } from '@/lib/safety-layer';
 import { createTherapyPlan } from '@/lib/therapy-planner';
 import { lookupConditionKnowledge } from '@/lib/knowledge-graph';
@@ -30,7 +30,11 @@ const DEFAULT_PROFILE: UserProfile = {
   sleepQuality: 'Fair',
   stressLevel: 'Moderate',
   fitnessGoal: 'Improve arm function, walk more confidently, and sleep better',
+  language: 'English',
+  customConditionDetails: '',
 };
+
+const OTHER_CONDITION = 'Other (type your own / search with AI)';
 
 export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
@@ -58,6 +62,11 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
   const handleGenerate = useCallback(async () => {
     setError('');
     setSafetyWarning(null);
+
+    if (profile.primaryCondition === OTHER_CONDITION && !profile.customConditionDetails?.trim()) {
+      setError('Please describe your condition so the AI can research and tailor a session for it.');
+      return;
+    }
 
     // Safety check first — always
     const safety = performSafetyCheck(profile);
@@ -156,6 +165,24 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
         </div>
       </div>
 
+      {/* ── LANGUAGE ───────────────────────────────────────────────── */}
+      <div className="mb-5">
+        <label className={labelCls} htmlFor="language">
+          Session language
+        </label>
+        <select
+          id="language"
+          value={profile.language}
+          onChange={(e) => updateField('language', e.target.value as LanguageOption)}
+          className={inputCls}
+        >
+          {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
+        </select>
+        <p className="text-[10px] text-[#8a9a8a] mt-1">
+          Choose Hindi or Bilingual to have narration and on-screen text in Hindi alongside English.
+        </p>
+      </div>
+
       {/* ── PRIMARY CONDITION ─────────────────────────────────────── */}
       <div className="mb-5">
         <label className={labelCls} htmlFor="primary">
@@ -165,7 +192,6 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
           id="primary"
           value={profile.primaryCondition}
           onChange={(e) => {
-            updateField('primaryCondition', e.target.value);
             // Clear secondary if it equals new primary
             setProfile((prev) => ({
               ...prev,
@@ -177,6 +203,26 @@ export default function ProfileForm({ onSessionGenerated }: ProfileFormProps) {
         >
           {(CONDITIONS as readonly string[]).map((c) => <option key={c}>{c}</option>)}
         </select>
+
+        {profile.primaryCondition === OTHER_CONDITION && (
+          <div className="mt-3">
+            <label className={labelCls} htmlFor="customCondition">
+              Describe your condition
+            </label>
+            <textarea
+              id="customCondition"
+              value={profile.customConditionDetails}
+              onChange={(e) => updateField('customConditionDetails', e.target.value)}
+              rows={2}
+              maxLength={300}
+              placeholder="e.g. Frozen shoulder after a fall, chronic migraine, post-surgical recovery…"
+              className={`${inputCls} resize-none placeholder-[#b8b3a8]`}
+            />
+            <p className="text-[10px] text-[#8a9a8a] mt-1">
+              Type any condition not in the list — the AI will research it and design a safe, tailored mental exercise session for you.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── SECONDARY CONDITIONS ──────────────────────────────────── */}
